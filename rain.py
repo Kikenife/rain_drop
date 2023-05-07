@@ -1,8 +1,9 @@
 import sys
 import pygame
+from random import randint
 
 from settings import Settings
-from rain_drop import Rain_drop
+from rain_drop import Raindrop
 
 class Rain:
     """Overall class to manage the rain game"""
@@ -14,15 +15,16 @@ class Rain:
 
         self.screen = pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height))
         pygame.display.set_caption("Raindrop Game")
-        self.raindrop = pygame.sprite.Group()
+        self.raindrops = pygame.sprite.Group()
 
-        self._create_raindrop()
+        self._create_drops()
 
 
     def run_game(self):
         """Start the main loop for the game"""
         while True:
             self._check_event()
+            self.raindrops.update()
             self._screen_update()
             self.clock.tick(60)
 
@@ -38,28 +40,48 @@ class Rain:
         if event.key == pygame.K_q:
             sys.exit()
 
+    
+    def _create_drops(self):
+        """Create a sky full of raindrops."""
+        # Create a drop and keep adding drops until there's no room left.
+        #   Spacing between drops is one drop width.
+        #   Note that the spacing here works reasonably for larger drops.
+        #   If you're working with smaller drops, there might be a better
+        #   approach to spacing.
+        drop = Raindrop(self)
+        drop_width, drop_height = drop.rect.size
+
+        current_x, current_y = drop_width, drop_height
+        while current_y < (self.settings.screen_height - 2 * drop_height):
+            while current_x < (self.settings.screen_width - 2 * drop_width):
+                self._create_drop(current_x, current_y)
+                current_x += 2 * drop_width
+
+            # Finished a row; reset x value, and increment y value.
+            current_x = drop_width
+            current_y += 2 * drop_height
+
+    def _create_drop(self, x_position, y_position):
+        """Create a rain drop and place it in a row"""
+        new_drop = Raindrop(self)
+        new_drop.y = y_position
+        new_drop.rect.x = x_position + self._get_raindrop_offset()
+        new_drop.rect.y = y_position + self._get_raindrop_offset()
+        self.raindrops.add(new_drop)
+
+    def _get_raindrop_offset(self):
+        """Return a random adjustment to the raindrop position"""
+        offset_size = 15
+        return randint(-1 * offset_size, offset_size)
+
     def _screen_update(self):
         #Redraw the screen during each pass through the loop.
         self.screen.fill(self.settings.bg_color)
-        self.raindrop.draw(self.screen)
+        self.raindrops.draw(self.screen)
 
         #Make the most recently drawn screen visible.
         pygame.display.flip()
 
-    def _create_raindrop(self):
-        """Create the fleet of raindrop"""
-        #Create a raindrop and keep adding raindrop until there is no room left.
-        #Spacing between raindrop is one raindrop width
-        raindrops = Rain_drop(self)
-        raindrop_width = raindrops.rect.width
-
-        current_x = raindrop_width
-        while current_x < (self.settings.screen_width - 2 * raindrop_width):
-            new_raindrop = Rain_drop(self)
-            new_raindrop.x = current_x
-            new_raindrop.rect.x = current_x
-            self.raindrop.add(new_raindrop)
-            current_x += 2 * raindrop_width
 
 if __name__ == '__main__':
     #Make a game instance, and run the game.

@@ -1,13 +1,14 @@
 import pygame
 from pygame.sprite import Sprite
 
-class Rain_drop(Sprite):
+class Raindrop(Sprite):
     """A class to represent a single rain drop in the game"""
 
     def __init__(self,rain):
         """initialize the rain drop and set its starting point"""
         super().__init__()
         self.screen = rain.screen
+        self.settings = rain.settings
 
         #Load the rain drop image and set its rect attribute.
         self.image = pygame.image.load('images/raindrop.png')
@@ -18,4 +19,10 @@ class Rain_drop(Sprite):
         self.rect.y = self.rect.height
 
         #Store the alien's exact horizontal position.
-        self.x = float(self.rect.x)
+        self.y = float(self.rect.y)
+
+    def update(self):
+        """Move the raindrop down the screen."""
+        self.y += self.settings.raindrop_speed
+        self.rect.y = self.y
+
