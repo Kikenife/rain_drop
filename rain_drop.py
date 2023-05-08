@@ -21,6 +21,13 @@ class Raindrop(Sprite):
         #Store the alien's exact horizontal position.
         self.y = float(self.rect.y)
 
+    def check_disappeared(self):
+        """chech if drop has disappeared off bottom of screen"""
+        if self.rect.top > self.screen.get_rect().bottom:
+            return True
+        else:
+            return False
+
     def update(self):
         """Move the raindrop down the screen."""
         self.y += self.settings.raindrop_speed

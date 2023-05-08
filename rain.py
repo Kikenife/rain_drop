@@ -24,7 +24,7 @@ class Rain:
         """Start the main loop for the game"""
         while True:
             self._check_event()
-            self.raindrops.update()
+            self._update_raindrops()
             self._screen_update()
             self.clock.tick(60)
 
@@ -65,14 +65,42 @@ class Rain:
         """Create a rain drop and place it in a row"""
         new_drop = Raindrop(self)
         new_drop.y = y_position
-        new_drop.rect.x = x_position + self._get_raindrop_offset()
-        new_drop.rect.y = y_position + self._get_raindrop_offset()
+        new_drop.rect.x = x_position 
+        new_drop.rect.y = y_position 
         self.raindrops.add(new_drop)
 
-    def _get_raindrop_offset(self):
-        """Return a random adjustment to the raindrop position"""
-        offset_size = 15
-        return randint(-1 * offset_size, offset_size)
+    def _create_new_row(self):
+        """create a new row of raindrops after a row disappears."""
+        drop = Raindrop(self)
+        drop_width, drop_height = drop.rect.size
+
+        current_x = drop_width
+        current_y = -1 * drop_height
+        while current_x < (self.settings.screen_width - 2 * drop_width):
+            self._create_drop(current_x, current_y)
+            current_x += 2 * drop_width
+
+    def _update_raindrops(self):
+        """Update drop position, and look for drops that have disappeared."""
+        self.raindrops.update()
+
+        #Assume we won't make new drops
+        make_new_drops = False
+        for drop in self.raindrops.copy():
+            if drop.check_disappeared():
+                #Remove this drop, and we'll need to make new drops.
+                self.raindrops.remove(drop)
+                make_new_drops = True
+
+        #Make a new row of drops if needed.
+        if make_new_drops:
+            self._create_new_row()
+
+
+    # def _get_raindrop_offset(self):
+    #     """Return a random adjustment to the raindrop position"""
+    #     offset_size = 15
+    #     return randint(-1 * offset_size, offset_size)
 
     def _screen_update(self):
         #Redraw the screen during each pass through the loop.
